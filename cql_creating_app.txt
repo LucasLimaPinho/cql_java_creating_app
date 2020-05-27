@@ -85,6 +85,26 @@ bin/sstable2json var/lib/cassandra/data/home_security/activity/home_security-act
 
 bin/nodetool flush home_security # flushs the MEMCACHE of all tables in KEYSPACE home_security
 
+## MODELANDO DADOS EM CASSANDRA: o fato de não existir JOINS em Cassandra talvez seja a principal diferença entre
+# um banco relacional e um banco de dados distribuído como Cassandra - o que também difere a linguagem SQL do CQL
+
+# Como resultado: data modelling in Cassandra precisa ser feito de uma forma que que todos os dados disponíveis para uma query
+# estejam presentes em uma única tabela. 
+
+# WHERE clauses geralmente precisam inserir uma PARTITION KEY (primeiro índice da PRIMARY KEY)
+
+# Querys que utilizam WHERE sem PARTITION KEY não funcionam. A PARTITION KEY pode ser composta.
+
+SELECT * FROM activity WHERE home_id = 'H01474777' AND datetime > '2014-05-22 00:00:00';
+
+# Comando acima funciona tendo primary key composta e possuindo partition key.
+
+SELECT * from activity WHERE code_used = '5999' # ---> não funciona pois não possui partition key
+
+# Criando SECONDARY INDEXES, estes podem ser utilizados em WHERE clauses;
+# SECONDARY INDEXES não aumenta velocidade de query -> apenas possibilita que querys com WHERE funcionem
+
+
 
 
 
