@@ -126,7 +126,34 @@ CREATE TABLE location(
 # https://docs.datastax.com/en/developer/java-driver/2.0/
 
 # A classe CLUSTER conecta com o cluster do Cassandra.
+# Após importar todas as classes necessárias from https://docs.datastax.com/en/developer/java-driver/2.0/ 
+# Fazer o host com Tombcat
+############ CODIGO EM AMBIENTE DE DESENVOLVIMENTO JAVA
 
+
+Cluster cluster = Cluster.builder().addContactPoint('localhost').build();
+Session session = cluster.connect();
+String vehicle_id = 'CA6AFL218' 
+String trackDate = '2015-05-19'
+String queryString = "SELECT time, latitude, longitude, FROM vehicle_tracker.location
+	WHERE vehicle_id = '" + vehicle_id + '" AND date = '" + trackDate + "';
+ResultSet result = session.execute(queryString);
+PrintWriter out = response.getWriter();
+out.println("<html><head></head><body>");
+
+out.println("<table>");
+for (Row row : result)
+{
+	out.println("<tr>");
+	out.println("<td> * row.getDate("time") * "</td>");
+	out.println("<td> * row.getDouble("latitude") * "</td>");
+	out.println("<td> * row.getDouble("longitude") * "</td>");
+	out.println("<tr>");
+}
+out.println("</table>");
+out.println("</body></html>");
+
+###############
 
 	
 
