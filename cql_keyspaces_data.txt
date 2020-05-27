@@ -99,10 +99,36 @@ SELECT * FROM activity WHERE home_id = 'H01474777' AND datetime > '2014-05-22 00
 
 # Comando acima funciona tendo primary key composta e possuindo partition key.
 
-SELECT * from activity WHERE code_used = '5999' # ---> não funciona pois não possui partition key
+SELECT * from activity WHERE home_id = 'H01474777' AND code_used = '5599' # ---> não funciona pois não possui partition key
 
 # Criando SECONDARY INDEXES, estes podem ser utilizados em WHERE clauses;
 # SECONDARY INDEXES não aumenta velocidade de query -> apenas possibilita que querys com WHERE funcionem
+# CREATE INDEX -> criar índices secundários para permitir querys where sem partition key
+
+CREATE INDEX code_used_index ON activity (code_used);
+SELECT * from activity WHERE home_id = 'H01474777' AND code_used = '5599' -> agora podemos trabalhar com isso
+
+# COMPOSITE PARTITION KEY - exemplo abaixo de criação de uma partition key composta; Controlar o tamanho de uma partição
+# Todos os dados de uma partição devem caber em um disco no nó durante partição e a partição não deve crescer indefinidamente;
+
+
+CREATE TABLE location(
+	vehicle_id text,
+	date text,
+	time timestamp,
+	latitude double,
+	longitude double,
+	PRIMARY KEY((vehicle_id, date),time)
+	);
+
+### CRIANDO APLICAÇÃO COM JAVA - download binary tarball com driver para aplicação java
+
+# https://docs.datastax.com/en/developer/java-driver/2.0/
+
+# A classe CLUSTER conecta com o cluster do Cassandra.
+
+
+	
 
 
 
