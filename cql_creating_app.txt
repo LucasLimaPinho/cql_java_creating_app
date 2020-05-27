@@ -46,6 +46,47 @@ USE home_security; # KEYSPACE home_security
 # Durante criação da TABELA, the PARTITION KEY é o valor na PRIMARY KEY. Será sempre o valor antes da primeira vírgula.
 # No caso, o processo de partição será feito levando em consideração home_id -> primeiro índice da PRIMARY KEY
 
+### WRITING DATA 
+
+# INSERT INTO command para escrever uma única linha
+# COPY FROM (import) commando -> útil para importar dados de um csv por exemplo
+# COPY TO (export) também pode ser usado para exportar para csv
+# sstableloader tool -> buckloading. Streams SSTable files para um cluster vivo.
+#activity here is the TABLE;
+
+
+COPY activity (home_id,  datetime, event, code_used) FROM '/home/vm1/Desktop/Files/Chapter7/events.csv'
+	WITH header = true AND delimiter = '|';
+
+# Para entender como os dados são armazenados no cassandra -> acessar bin/cassandra-cli
+# RowKey é o mesmo que PARTITION KEY que é o mesmo que primeiro índice do PRIMARY KEY;
+# RowKey é herdado da aplicação Thrift
+# O armazenamento interno no Cassandra sempre leva em consideração a PARTITION KEY, utilizar o bin/cassandra-cli ajuda a entender.
+# No final, quando temos a mesma PARTITION KEY para várias linhas, transforma em um modelo KEY-VALUE com N colunas para o partition key
+# sendo N o número de redundâncias do primeiro índice da PRIMARY KEY;
+
+# bin/cassandra-cli acompanhando de USE keyspace e LIST table irá retornar X rows
+# X será o número de partitions keys existentes na table.
+# Cada partition key será alojada em um nó de acoro com os endingpoints do token range
+
+# How Data is Stored on Disk???? SSTable after latency time in cache.
+# Quando os dados são escritos em Cassandra, eles vão ambos para um log em disco (para playback em caso de falha)
+# quanto para um MEMCACHE
+# QUando o MEMCACHE de uma TABLE está cheio, ele é descarregado para disco como um SSTable.
+
+# Para cada SSTable em cada nó tem um MEMCACHE.
+# As SSTable são gravadas em disco em local definido pelo arquivo de configuração cassandra.yaml 
+# por default: (/var/lib/cassandra/data directory) ----> será o Data.db file dentro do diretório do KEYSPACE e TABLE desejado
+# Quando o MEMCACHE não está cheio, não será gerado SSTable e a pasta /var/lib/cassandra/data/home_security/acitivity estará vazia
+
+# Para ver o conteúdo de uma SSTable, podemos utilizar:
+
+bin/sstable2json var/lib/cassandra/data/home_security/activity/home_security-activity-jb-1Data.db
+
+bin/nodetool flush home_security # flushs the MEMCACHE of all tables in KEYSPACE home_security
+
+
+
 
 
 
