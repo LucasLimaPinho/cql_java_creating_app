@@ -1,0 +1,51 @@
+CREATE KEYSPACE; # Definição de um KEYSPACE 
+
+
+CREATE KEYSPACE vehicle_tracker WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor' = 1};
+
+CREATE KEYSPACE vehicle_tracker WITH REPLICATION = { 'class': 'NetworkTopologyStrategy', 
+	'dc1': 3, 'dc2': 2};
+
+# NetworkTopologyStrategy determina que seus dados estarão distribuídos em diferentes data_centers
+# Diferentemente de estratégia simples em que o cluster se concentra em somente 1 datacenter.
+# 'dc1': 3 -> 3 é igual ao replication_factor para data_center1. Devemos ter pelo menos 3 nós para o data_center1
+# 'dc2': 2 -> 2 é igual ao replication_factor para data_center2. Devemos ter pelo menos 2 nós para o data_center1
+
+
+# Deleting a KEYSPACE
+
+DROP KEYSPACE vehicle_tracker;
+
+CREATE KEYSPACE home_security WITH REPLICATION = { 'class' = 'SimpleStrategy', 'replication_factor' =1};
+
+# Criando TABELAS DENTRO DE UM KEYSPACE - Lembre-se: tipicamente um KEYSPACE por aplicação. É semelhante ao SCHEMA do SQL.
+# home_id, datetime, event, code_used serão colunas definidas dentro da tabela que faz parte do keyspace home_security
+# Cassandra é row-oriented.
+
+CREATE TABLE activity(
+	home_id text,
+	datetime timestamp,
+	event text,
+	code_used text,
+	PRIMARY KEY (home_id, datetime)
+)WITH CLUSTERING ORDER BY (datetime DESC); #Defining the CLUSTERING ORDER durante a criação é essencial
+
+# Por mais que possamos utilizar comandos ALTER TABLE para adicionar colunas (por exemplo), 
+# não podemos mudar a forma de ORDER BY das tabelas no Cassandra após sua criação;
+
+
+
+# PRIMARY KEY só podem ocorrer uma vez. PRIMARY KEY is a way to uniquely identify a record in CQL table.
+
+DROP TABLE activity;
+
+USE home_security; # KEYSPACE home_security
+
+# THE PARTITION KEY é HASHED a partir das linhas utulizando Murmur3 by default para determinar qual nó no cluster irá guardar a partição
+# THE PARTITION KEY gets HASHED by the partitioner in this way -> receives a number from 2**-63 to 2**63
+# Durante criação da TABELA, the PARTITION KEY é o valor na PRIMARY KEY. Será sempre o valor antes da primeira vírgula.
+# No caso, o processo de partição será feito levando em consideração home_id -> primeiro índice da PRIMARY KEY
+
+
+
+
